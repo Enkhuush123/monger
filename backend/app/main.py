@@ -5,8 +5,10 @@ from fastapi.staticfiles import StaticFiles
 
 from app.api.v1 import auth, users, categories, articles, blogs, ads, places, upload
 from app.core.config import settings
-from app.db.database import SessionLocal
+from app.db.database import SessionLocal, Base, engine
 from app.services.ai_news_bot import publish_auto_news
+from app.db.seed import seed
+from app.db.seed_places import seed_places
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -22,10 +24,10 @@ app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins in development
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],  # Allows all methods
-    allow_headers=["*"],  # Allows all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Include routers
@@ -40,9 +42,25 @@ app.include_router(upload.router, prefix="/api/v1/upload", tags=["File Upload"])
 
 @app.on_event("startup")
 def startup_event():
-    """
-    Сервер асах үед AI автомат бот ажиллуулж мэдээг дүүргэх
-    """
+    # 1. Ensure tables exist
+    try:
+        Base.metadata.create_all(bind=engine)
+        print("Database schema created / verified.")
+    except Exception as e:
+        print("Schema init notice:", e)
+
+    # 2. Seed default users, categories, places
+    try:
+        seed()
+    except Exception as e:
+        print("Seed notice:", e)
+
+    try:
+        seed_places()
+    except Exception as e:
+        print("Seed places notice:", e)
+
+    # 3. Startup AI news publisher
     db = SessionLocal()
     try:
         from app.db.models import Article
@@ -57,5 +75,18 @@ def startup_event():
         db.close()
 
 @app.get("/")
+@app.get("/api/v1")
 def read_root():
-    return {"message": "Welcome to Monger API. Visit /docs for Swagger UI."}
+    return {
+        "message": "Welcome to Monger API. Visit /docs for Swagger UI.",
+        "status": "online"
+    }
+
+@app.get("/health")
+@app.get("/api/v1/health")
+def health_check():
+    return {
+        "status": "healthy",
+        "service": "monger-backend",
+        "version": "0.1.0"
+    }

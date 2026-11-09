@@ -11,6 +11,7 @@ router = APIRouter()
 
 from app.services.ai_news_bot import publish_auto_news
 
+@router.get("", response_model=List[ArticleResponse])
 @router.get("/", response_model=List[ArticleResponse])
 def get_articles(skip: int = 0, limit: int = 20, db: Session = Depends(get_db)):
     """

@@ -8,6 +8,7 @@ from app.schemas.schemas import CategoryResponse, CategoryCreate
 
 router = APIRouter()
 
+@router.get("", response_model=List[CategoryResponse])
 @router.get("/", response_model=List[CategoryResponse])
 def get_categories(db: Session = Depends(get_db)):
     """

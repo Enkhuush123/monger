@@ -9,6 +9,7 @@ from app.schemas.schemas import PlaceCreate, PlaceResponse, PlaceReviewCreate, P
 
 router = APIRouter()
 
+@router.get("", response_model=List[PlaceResponse])
 @router.get("/", response_model=List[PlaceResponse])
 def get_places(
     category: Optional[str] = None,
@@ -58,6 +59,7 @@ def get_place_detail(place_id: int, db: Session = Depends(get_db)):
     return place
 
 
+@router.post("", response_model=PlaceResponse)
 @router.post("/", response_model=PlaceResponse)
 def create_place(place_in: PlaceCreate, db: Session = Depends(get_db)):
     """
