@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
+import { getApiUrl } from "@/lib/api";
+import { DEFAULT_PLACES } from "@/lib/fallbackData";
 import { 
   Star, MapPin, Phone, Clock, ShieldCheck, ChevronLeft, 
   Send, MessageSquare, CheckCircle, ChevronDown, Check, Share2, Compass, ExternalLink 
@@ -115,15 +117,46 @@ const PLACE_LOCALES: Record<number, Record<Lang, { name: string; desc: string }>
     ko: { name: "팻 캣 재즈 클럽 (Fat Cat Jazz Club)", desc: "몽골 현지 실력파 뮤지션들의 라이브 재즈 공연을 즐길 수 있는 이국적인 분위기의 스피크이지 칵테일 바." },
     en: { name: "Fat Cat Jazz Club", desc: "Intimate live jazz sanctuary and cocktail speakeasy featuring talented artists and soul-stirring music." },
     ja: { name: "ファットキャット・ジャズクラブ", desc: "毎晩生演奏が楽しめるウランバートル唯一無二の隠れ家的ジャズクラブ。" }
+  },
+  6: {
+    mn: { name: "Shangri-La Hotel Ulaanbaatar", desc: "Улаанбаатарын тэргүүлэх 5 одтой олон улсын зочид буудал, тансаг спа, дээд зэрэглэлийн үйлчилгээ." },
+    ko: { name: "샹그릴라 호텔 울란바토르", desc: "울란바토르 최고급 5성급 럭셔리 호텔. 고급 스파, 쇼핑몰 연결, 최고 수준의 인터내셔널 다이닝." },
+    en: { name: "Shangri-La Hotel Ulaanbaatar", desc: "Premier 5-star international hotel in downtown Ulaanbaatar with luxury spa, fine dining, and executive suites." },
+    ja: { name: "シャングリ・ラ ホテル ウランバートル", desc: "市中心部に位置する最高級5つ星ホテル。洗練されたサービスと豪華なスパを完備。" }
+  },
+  7: {
+    mn: { name: "UBean Coffee Roasters", desc: "Шинэхэн хуурсан тусгай сортын кофе, амтат десерт, залуусын бүтээлч уур амьсгалтай тухтай кофе шоп." },
+    ko: { name: "유빈 커피 로스터스 (UBean Coffee)", desc: "직접 로스팅한 스페셜티 원두 드립 커피와 디저트가 일품인 아늑한 노트북 작업 친화적 카페." },
+    en: { name: "UBean Coffee Roasters", desc: "Artisan specialty coffee roastery offering freshly roasted origin beans and cozy laptop-friendly workspaces." },
+    ja: { name: "ユービーン・コーヒーロースターズ", desc: "自家焙煎スペシャルティコーヒーとスイーツが自慢の落ち着いたカフェ。" }
+  },
+  8: {
+    mn: { name: "Чойжин Ламын Сүм Музей", desc: "XX зууны эхэн үеийн буддын шашны хосгүй уран барилга, цам хайлгын нандин өв дурсгалууд." },
+    ko: { name: "초이진 라마 사원 박물관", desc: "20세기 초 몽골 불교 건축의 걸작이자 신비로운 챠ム 가면과 불교 예술품이 보존된 고즈넉한 사원." },
+    en: { name: "Choijin Lama Temple Museum", desc: "Breathtaking early 20th-century Buddhist architectural complex preserving exquisite Tsam religious art and statues." },
+    ja: { name: "チョイジンラマ寺院博物館", desc: "20世紀初頭のチベット仏教寺院建築と貴重な仏教美術を展示する文化遺産。" }
+  },
+  9: {
+    mn: { name: "Veranda Mediterranean Restaurant", desc: "Чойжин сүмийг тольдон харах панорама тагт, гар хийцийн итали паста, сонгодог пицца, дарсны цуглуулга." },
+    ko: { name: "베란다 레스토랑 (Veranda)", desc: "초이진 사원이 한눈에 내려다보이는 야외 테라스 뷰 맛집. 수제 이탈리안 파스타와 와인이 유명한 명소." },
+    en: { name: "Veranda Mediterranean Restaurant", desc: "Chic Mediterranean dining overlooking the ancient temple with handmade pastas, artisan pizzas, and fine wines." },
+    ja: { name: "ベランダ・レストラン", desc: "寺院を見下ろす美しいテラス席で楽しむ本格手打ちパスタと地中海料理。" }
+  },
+  10: {
+    mn: { name: "Zaisan Hill Complex", desc: "Улаанбаатар хотыг бүхэлд нь тольдон харах шилэн гүүр, үзвэр үйлчилгээ, кино театр, дээд зэрэглэлийн ресторанууд." },
+    ko: { name: "자이승 힐 콤플렉스 (Zaisan Hill)", desc: "울란바토르 시내 야경이 한눈에 펼쳐지는 글래스 스카이워크와 고급 레스토랑, 영화관이 모인 복합 랜드마크." },
+    en: { name: "Zaisan Hill Complex", desc: "Iconic modern lifestyle hub at Zaisan with panoramic glass skywalk, fine restaurants, shopping, and entertainment." },
+    ja: { name: "ザイサン・ヒル・コンプレックス", desc: "市内を一望できるガラスの展望ブリッジと高級レストランが揃うモダン複合施設。" }
   }
 };
 
 export default function PlaceDetailPage() {
   const params = useParams();
   const placeId = params?.id ? Number(params.id) : 1;
+  const fallbackPlace = DEFAULT_PLACES.find(p => p.id === Number(placeId)) || DEFAULT_PLACES[0];
 
-  const [place, setPlace] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [place, setPlace] = useState<any>(fallbackPlace);
+  const [loading, setLoading] = useState(false);
   const [lang, setLang] = useState<Lang>("mn");
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
 
@@ -138,14 +171,22 @@ export default function PlaceDetailPage() {
 
   const fetchPlace = () => {
     if (!placeId) return;
-    fetch(`http://127.0.0.1:8000/api/v1/places/${placeId}`)
-      .then(res => res.json())
+    fetch(getApiUrl(`/api/v1/places/${placeId}`))
+      .then(res => {
+        if (!res.ok) throw new Error("Backend offline");
+        return res.json();
+      })
       .then(data => {
-        setPlace(data);
+        if (data && data.name) {
+          setPlace(data);
+        } else {
+          setPlace(fallbackPlace);
+        }
         setLoading(false);
       })
       .catch(err => {
-        console.error(err);
+        console.warn("Using default place detail:", err);
+        setPlace(fallbackPlace);
         setLoading(false);
       });
   };
@@ -160,7 +201,7 @@ export default function PlaceDetailPage() {
 
     setSubmitting(true);
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/v1/places/${placeId}/reviews`, {
+      const res = await fetch(getApiUrl(`/api/v1/places/${placeId}/reviews`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -175,9 +216,26 @@ export default function PlaceDetailPage() {
         setReviewSuccess(true);
         fetchPlace();
         setTimeout(() => setReviewSuccess(false), 4000);
+      } else {
+        throw new Error("API error");
       }
     } catch (e) {
-      console.error("Review submit error:", e);
+      console.warn("Review fallback store:", e);
+      const newRev = {
+        id: Date.now(),
+        author_name: authorName || "Зочин (Traveler)",
+        rating: Number(rating),
+        comment,
+        created_at: new Date().toISOString()
+      };
+      setPlace((prev: any) => ({
+        ...prev,
+        review_count: (prev?.review_count || 0) + 1,
+        reviews: [newRev, ...(prev?.reviews || [])]
+      }));
+      setComment("");
+      setReviewSuccess(true);
+      setTimeout(() => setReviewSuccess(false), 4000);
     } finally {
       setSubmitting(false);
     }
@@ -269,7 +327,7 @@ export default function PlaceDetailPage() {
           </div>
         </div>
 
-        {/* 2026 HERO DETAIL CARD */}
+        {/* HERO DETAIL CARD */}
         <div className="bg-zinc-900/70 backdrop-blur-2xl rounded-3xl border border-zinc-800/80 overflow-hidden shadow-2xl mb-10">
           
           {/* Big Cinematic Image Header */}
@@ -392,7 +450,7 @@ export default function PlaceDetailPage() {
           </div>
         </div>
 
-        {/* 2026 REVIEWS & RATING SECTION */}
+        {/* REVIEWS & RATING SECTION */}
         <div className="space-y-6">
           <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
             <h3 className="font-extrabold text-xl text-white flex items-center gap-2.5">

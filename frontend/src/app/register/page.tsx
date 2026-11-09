@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { getApiUrl } from "@/lib/api";
 import { ArrowLeft } from "lucide-react";
 
 export default function Register() {
@@ -19,7 +20,7 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/v1/auth/register", {
+      const res = await fetch(getApiUrl("/api/v1/auth/register"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

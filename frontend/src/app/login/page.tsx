@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { getApiUrl } from "@/lib/api";
 import { ArrowLeft, Sparkles, Lock, User } from "lucide-react";
 
 export default function Login() {
@@ -18,7 +19,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/v1/auth/login/access-token", {
+      const res = await fetch(getApiUrl("/api/v1/auth/login/access-token"), {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",

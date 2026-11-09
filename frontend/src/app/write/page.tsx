@@ -1,5 +1,6 @@
 "use client";
 
+import { getApiUrl } from "@/lib/api";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -21,7 +22,7 @@ export default function WriteArticle() {
     }
 
     // Ангиллуудыг татах
-    fetch("http://127.0.0.1:8000/api/v1/categories/")
+    fetch(getApiUrl("/api/v1/categories/"))
       .then(res => res.json())
       .then(data => {
         setCategories(data);
@@ -36,7 +37,7 @@ export default function WriteArticle() {
     const token = localStorage.getItem("token");
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/v1/articles/", {
+      const res = await fetch(getApiUrl("/api/v1/articles/"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

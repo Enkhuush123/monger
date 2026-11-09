@@ -1,5 +1,6 @@
 "use client";
 
+import { getApiUrl } from "@/lib/api";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Search, Menu, X, User, Edit3, LogOut, Megaphone, DollarSign, MapPin, Sparkles } from "lucide-react";
@@ -20,7 +21,7 @@ export default function Header({ q = "" }: { q?: string }) {
     const token = localStorage.getItem("token");
     if (token) {
       setIsLoggedIn(true);
-      fetch("http://127.0.0.1:8000/api/v1/users/me", {
+      fetch(getApiUrl("/api/v1/users/me"), {
         headers: { "Authorization": `Bearer ${token}` }
       })
       .then(res => res.json())

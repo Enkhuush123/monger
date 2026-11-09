@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
+import { getApiUrl } from "@/lib/api";
 import ImageUpload from "@/components/ImageUpload";
 import { ChevronLeft, Building2, CheckCircle, ShieldCheck } from "lucide-react";
 
@@ -32,7 +33,7 @@ export default function NewPlacePage() {
 
     setLoading(true);
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/v1/places/", {
+      const res = await fetch(getApiUrl("/api/v1/places/"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

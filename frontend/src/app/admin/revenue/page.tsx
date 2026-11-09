@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Header from "@/components/Header";
+import { getApiUrl } from "@/lib/api";
 import { DollarSign, Eye, MousePointer, ShieldCheck, Clock, Phone, TrendingUp, Sparkles, Bot, CheckCircle } from "lucide-react";
 
 export default function AdminRevenuePage() {
@@ -14,7 +15,7 @@ export default function AdminRevenuePage() {
     setAiPublishing(true);
     setAiMessage("");
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/v1/articles/ai-auto-publish?count_per_topic=3", {
+      const res = await fetch(getApiUrl("/api/v1/articles/ai-auto-publish?count_per_topic=3"), {
         method: "POST"
       });
       const data = await res.json();
@@ -30,7 +31,7 @@ export default function AdminRevenuePage() {
   };
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/api/v1/ads/admin/stats")
+    fetch(getApiUrl("/api/v1/ads/admin/stats"))
       .then(res => res.json())
       .then(data => {
         setStats(data);

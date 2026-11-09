@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
+import { getApiUrl } from "@/lib/api";
 import ImageUpload from "@/components/ImageUpload";
 import { Megaphone, CheckCircle, ShieldCheck, Sparkles, ArrowRight, QrCode, ChevronLeft } from "lucide-react";
 
@@ -56,7 +57,7 @@ export default function CreateAdPage() {
 
     setLoading(true);
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/v1/ads/create", {
+      const res = await fetch(getApiUrl("/api/v1/ads/create"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -85,7 +86,7 @@ export default function CreateAdPage() {
     if (!invoice?.ad?.id) return;
     setLoading(true);
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/v1/ads/${invoice.ad.id}/pay-confirm`, {
+      const res = await fetch(getApiUrl(`/api/v1/ads/${invoice.ad.id}/pay-confirm`), {
         method: "POST"
       });
       if (res.ok) {

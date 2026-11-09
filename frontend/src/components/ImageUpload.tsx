@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { getApiUrl } from "@/lib/api";
 import { UploadCloud, Image as ImageIcon, CheckCircle, X, Loader2, Camera } from "lucide-react";
 
 interface ImageUploadProps {
@@ -32,7 +33,7 @@ export default function ImageUpload({ initialUrl = "", onUploadSuccess, label = 
     formData.append("file", file);
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/v1/upload/image", {
+      const res = await fetch(getApiUrl("/api/v1/upload/image"), {
         method: "POST",
         body: formData,
       });

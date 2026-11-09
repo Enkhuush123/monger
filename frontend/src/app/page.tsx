@@ -2,6 +2,8 @@ import Link from 'next/link';
 import Header from '@/components/Header';
 import Hero3D from '@/components/Hero3D';
 import TrendingWidget from '@/components/TrendingWidget';
+import { getApiUrl } from '@/lib/api';
+import { DEFAULT_ARTICLES, DEFAULT_PLACES, DEFAULT_BLOGS, DEFAULT_PRIMARY_AD } from '@/lib/fallbackData';
 import { 
   Eye, Clock, CloudSun, ChevronRight, Megaphone, ExternalLink, Sparkles, 
   Star, MapPin, ShieldCheck, ArrowUpRight, Compass, Flame 
@@ -12,43 +14,57 @@ export default async function Home(props: { searchParams: Promise<{ q?: string }
   const q = searchParams?.q || "";
   
   // 1. Fetch Articles
-  const newsUrl = q 
-    ? `http://127.0.0.1:8000/api/v1/articles/search?q=${encodeURIComponent(q)}`
-    : `http://127.0.0.1:8000/api/v1/articles/`;
+  const newsPath = q 
+    ? `/api/v1/articles/search?q=${encodeURIComponent(q)}`
+    : `/api/v1/articles/`;
     
   let articles = [];
   try {
-    const res = await fetch(newsUrl, { cache: 'no-store' });
+    const res = await fetch(getApiUrl(newsPath), { cache: 'no-store' });
     if (res.ok) articles = await res.json();
   } catch (e) {
-    console.error("Articles fetch error:", e);
+    console.warn("Articles fallback mode:", e);
+  }
+  if (!articles || articles.length === 0) {
+    articles = q 
+      ? DEFAULT_ARTICLES.filter(a => a.title.toLowerCase().includes(q.toLowerCase()) || a.content.toLowerCase().includes(q.toLowerCase()))
+      : DEFAULT_ARTICLES;
   }
 
   // 2. Fetch Blogs
   let allBlogs = [];
   try {
-    const res = await fetch("http://127.0.0.1:8000/api/v1/blogs/all/posts", { cache: 'no-store' });
+    const res = await fetch(getApiUrl("/api/v1/blogs/all/posts"), { cache: 'no-store' });
     if (res.ok) allBlogs = await res.json();
   } catch (e) {
-    console.error("Blogs fetch error:", e);
+    console.warn("Blogs fallback mode:", e);
+  }
+  if (!allBlogs || allBlogs.length === 0) {
+    allBlogs = DEFAULT_BLOGS;
   }
 
   // 3. Fetch Active Ads
   let homeAds = [];
   try {
-    const res = await fetch("http://127.0.0.1:8000/api/v1/ads/active?ad_type=home_banner", { cache: 'no-store' });
+    const res = await fetch(getApiUrl("/api/v1/ads/active?ad_type=home_banner"), { cache: 'no-store' });
     if (res.ok) homeAds = await res.json();
   } catch (e) {
-    console.error("Ads fetch error:", e);
+    console.warn("Ads fallback mode:", e);
+  }
+  if (!homeAds || homeAds.length === 0) {
+    homeAds = [DEFAULT_PRIMARY_AD];
   }
 
   // 4. Fetch Top Places
   let featuredPlaces = [];
   try {
-    const res = await fetch("http://127.0.0.1:8000/api/v1/places/?limit=4", { cache: 'no-store' });
+    const res = await fetch(getApiUrl("/api/v1/places/?limit=4"), { cache: 'no-store' });
     if (res.ok) featuredPlaces = await res.json();
   } catch (e) {
-    console.error("Places fetch error:", e);
+    console.warn("Places fallback mode:", e);
+  }
+  if (!featuredPlaces || featuredPlaces.length === 0) {
+    featuredPlaces = DEFAULT_PLACES.slice(0, 4);
   }
 
   const primaryAd = homeAds.length > 0 ? homeAds[0] : null;

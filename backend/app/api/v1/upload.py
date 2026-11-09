@@ -38,7 +38,7 @@ async def upload_image(file: UploadFile = File(...)):
         with open(file_path, "wb") as f:
             f.write(content)
 
-        file_url = f"http://127.0.0.1:8000/uploads/{unique_filename}"
+        file_url = f"/uploads/{unique_filename}"
         return {
             "success": True,
             "filename": unique_filename,

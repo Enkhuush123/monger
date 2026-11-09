@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
+import { getApiUrl } from "@/lib/api";
 import { Sparkles, Edit3, CheckCircle, ArrowRight } from "lucide-react";
 
 export default function WriteBlog() {
@@ -29,13 +30,13 @@ export default function WriteBlog() {
     }
 
     // Check user and blog status
-    fetch("http://127.0.0.1:8000/api/v1/users/me", {
+    fetch(getApiUrl("/api/v1/users/me"), {
       headers: { "Authorization": `Bearer ${token}` }
     })
     .then(res => res.json())
     .then(userData => {
       setUsername(userData.username);
-      return fetch(`http://127.0.0.1:8000/api/v1/blogs/${userData.username}`);
+      return fetch(getApiUrl(`/api/v1/blogs/${userData.username}`));
     })
     .then(res => {
       if (res.ok) setHasBlog(true);
@@ -54,7 +55,7 @@ export default function WriteBlog() {
     const token = localStorage.getItem("token");
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/v1/blogs/", {
+      const res = await fetch(getApiUrl("/api/v1/blogs/"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -76,7 +77,7 @@ export default function WriteBlog() {
     const token = localStorage.getItem("token");
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/v1/blogs/posts/", {
+      const res = await fetch(getApiUrl("/api/v1/blogs/posts/"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,15 +1,21 @@
 import Link from 'next/link';
-import { Flame, TrendingUp } from 'lucide-react';
+import { Flame } from 'lucide-react';
+import { getApiUrl } from '@/lib/api';
+import { DEFAULT_TRENDS } from '@/lib/fallbackData';
 
 export default async function TrendingWidget() {
   let trends = [];
   try {
-    const res = await fetch("http://127.0.0.1:8000/api/v1/articles/trending", { cache: 'no-store' });
+    const res = await fetch(getApiUrl("/api/v1/articles/trending"), { cache: 'no-store' });
     if (res.ok) {
       trends = await res.json();
     }
   } catch (e) {
-    console.error("Тренд татаж чадсангүй:", e);
+    console.warn("Тренд fallback mode:", e);
+  }
+
+  if (!trends || trends.length === 0) {
+    trends = DEFAULT_TRENDS;
   }
 
   return (
@@ -29,39 +35,35 @@ export default async function TrendingWidget() {
         </span>
       </div>
 
-      {trends.length === 0 ? (
-        <p className="text-xs text-zinc-500">Одоогоор трэнд хайлт алга.</p>
-      ) : (
-        <ul className="space-y-2 relative z-10">
-          {trends.map((trend: any, idx: number) => {
-            const isTop3 = idx < 3;
-            return (
-              <li key={trend.id}>
-                <Link
-                  href={`/?q=${encodeURIComponent(trend.keyword)}`}
-                  className="group flex items-center gap-3 p-2 rounded-xl hover:bg-zinc-800/60 transition"
+      <ul className="space-y-2 relative z-10">
+        {trends.map((trend: any, idx: number) => {
+          const isTop3 = idx < 3;
+          return (
+            <li key={trend.id || idx}>
+              <Link
+                href={`/?q=${encodeURIComponent(trend.keyword)}`}
+                className="group flex items-center gap-3 p-2 rounded-xl hover:bg-zinc-800/60 transition"
+              >
+                <span
+                  className={`text-xs font-black w-5 h-5 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                    isTop3
+                      ? "bg-[#03C75A] text-black shadow-sm shadow-[#03C75A]/30"
+                      : "bg-zinc-800 text-zinc-400"
+                  }`}
                 >
-                  <span
-                    className={`text-xs font-black w-5 h-5 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                      isTop3
-                        ? "bg-[#03C75A] text-black shadow-sm shadow-[#03C75A]/30"
-                        : "bg-zinc-800 text-zinc-400"
-                    }`}
-                  >
-                    {idx + 1}
-                  </span>
-                  <span className="text-xs font-semibold text-zinc-300 group-hover:text-[#03C75A] transition flex-1 truncate">
-                    {trend.keyword}
-                  </span>
-                  <span className="text-[10px] text-zinc-500 font-mono opacity-0 group-hover:opacity-100 transition">
-                    хайх →
-                  </span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+                  {idx + 1}
+                </span>
+                <span className="text-xs font-semibold text-zinc-300 group-hover:text-[#03C75A] transition flex-1 truncate">
+                  {trend.keyword}
+                </span>
+                <span className="text-[10px] text-zinc-500 font-mono opacity-0 group-hover:opacity-100 transition">
+                  хайх →
+                </span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }
